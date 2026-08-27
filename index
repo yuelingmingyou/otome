@@ -3,583 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Otome Collection 🎀</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'lace-white': '#FFFAFA',
-                        'pastel-pink': '#FFD1DC',
-                        'pastel-blue': '#AEC6CF',
-                        'pastel-lavender': '#E6E6FA',
-                        'soft-gray': '#F5F5F5',
-                    },
-                    fontFamily: {
-                        'cute': ['"Nunito"', '"ZCOOL KuaiLe"', 'cursive', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            font-family: 'Nunito', sans-serif;
-            background-color: #fdf2f8; /* Light pink bg */
-            background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #FFD1DC; 
-            border-radius: 10px;
-        }
-
-        /* Lace Border Effect */
-        .lace-border {
-            position: relative;
-            background: white;
-            border: 4px solid #fff;
-            outline: 2px dashed #FFD1DC;
-            outline-offset: -6px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Bow CSS Decoration */
-        .bow-decoration::after {
-            content: '🎀';
-            position: absolute;
-            top: -15px;
-            right: -10px;
-            font-size: 2rem;
-            transform: rotate(15deg);
-            filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.1));
-            z-index: 10;
-        }
-
-        .card-hover:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-
-        /* Modal Animation */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        .modal-animate {
-            animation: fadeIn 0.3s ease-out forwards;
-        }
-
-        /* Star Rating */
-        .star-filled { color: #FFD700; }
-        .star-empty { color: #e5e7eb; }
-    </style>
+    <title>🎀 Otome Collection</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="text-gray-700 min-h-screen flex flex-col">
+<body>
+    <!-- 背景装饰 -->
+    <div class="bg-decoration">
+        <div class="lace-pattern"></div>
+    </div>
 
-    <!-- Header -->
-    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b-4 border-pastel-pink shadow-sm">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-3">
-                <span class="text-4xl">🎀</span>
-                <h1 class="text-2xl md:text-3xl font-cute font-bold text-pink-500 tracking-wide">Otome Memory</h1>
+    <!-- 头部 -->
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="logo">
+                <span class="bow">🎀</span>
+                <h1>Otome Memory</h1>
+            </div>
+            
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="搜索剧本、画师、声优...">
             </div>
 
-            <!-- Search & Filter -->
-            <div class="flex-1 w-full md:max-w-lg relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <i class="fas fa-search text-gray-400"></i>
-                </div>
-                <input type="text" id="searchInput" placeholder="搜索剧本、画师、声优..." 
-                    class="w-full pl-10 pr-4 py-2 rounded-full border-2 border-pastel-pink focus:outline-none focus:border-pink-400 bg-pink-50 transition-all shadow-inner font-cute">
-            </div>
-
-            <!-- Actions -->
-            <div class="flex gap-2">
-                <button onclick="app.openModal('add')" class="bg-pink-400 hover:bg-pink-500 text-white px-4 py-2 rounded-full shadow-md transition-transform hover:scale-105 font-cute flex items-center gap-2">
-                    <i class="fas fa-plus"></i> <span class="hidden md:inline">添加游戏</span>
+            <div class="header-actions">
+                <button class="btn btn-pink" onclick="app.openModal('add')">
+                    <span>＋</span> 添加游戏
                 </button>
-                <label class="bg-blue-300 hover:bg-blue-400 text-white px-4 py-2 rounded-full shadow-md transition-transform hover:scale-105 font-cute cursor-pointer flex items-center gap-2">
-                    <i class="fas fa-file-import"></i> <span class="hidden md:inline">导入</span>
-                    <input type="file" id="importFile" class="hidden" accept=".json" onchange="app.importData(this)">
+                <label class="btn btn-blue">
+                    <span>📥</span> 导入
+                    <input type="file" id="importFile" accept=".json" hidden onchange="app.importData(this)">
                 </label>
-                <button onclick="app.exportData()" class="bg-purple-300 hover:bg-purple-400 text-white px-4 py-2 rounded-full shadow-md transition-transform hover:scale-105 font-cute flex items-center gap-2">
-                    <i class="fas fa-file-export"></i> <span class="hidden md:inline">导出</span>
+                <button class="btn btn-purple" onclick="app.exportData()">
+                    <span>📤</span> 导出
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-grow p-6">
-        <div id="gameGrid" class="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            <!-- Cards will be injected here -->
-        </div>
-
-        <!-- Empty State -->
-        <div id="emptyState" class="hidden text-center mt-20">
-            <div class="text-6xl mb-4">🎀</div>
-            <h2 class="text-2xl font-cute text-gray-400">还没有游戏记录哦~</h2>
-            <p class="text-gray-400">点击右上角添加你的第一款乙女游戏吧！</p>
+    <!-- 主内容 -->
+    <main class="main-content">
+        <div id="gameGrid" class="game-grid"></div>
+        
+        <div id="emptyState" class="empty-state hidden">
+            <div class="empty-bow">🎀</div>
+            <h2>还没有游戏记录哦~</h2>
+            <p>点击右上角添加你的第一款乙女游戏吧！</p>
         </div>
     </main>
 
-    <!-- Add/Edit Modal -->
-    <div id="formModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto modal-animate relative border-4 border-white outline outline-2 outline-pink-200">
-            <!-- Modal Header -->
-            <div class="sticky top-0 bg-white/95 backdrop-blur z-10 px-6 py-4 border-b border-pink-100 flex justify-between items-center">
-                <h2 class="text-2xl font-cute text-pink-500 font-bold">✨ 记录新游戏</h2>
-                <button onclick="app.closeModal('form')" class="text-gray-400 hover:text-pink-500 text-2xl">&times;</button>
+    <!-- 添加/编辑弹窗 -->
+    <div id="formModal" class="modal hidden">
+        <div class="modal-content modal-animate">
+            <div class="modal-header">
+                <h2>✨ 记录新游戏</h2>
+                <button class="close-btn" onclick="app.closeModal('form')">×</button>
             </div>
-
-            <form id="gameForm" onsubmit="app.saveGame(event)" class="p-6 space-y-4">
+            
+            <form id="gameForm" onsubmit="app.saveGame(event)">
                 <input type="hidden" id="gameId">
                 
-                <!-- Image Upload -->
-                <div class="flex justify-center mb-6">
-                    <div class="relative group cursor-pointer w-40 h-56 bg-gray-100 rounded-xl border-2 border-dashed border-pink-300 flex items-center justify-center overflow-hidden hover:bg-pink-50 transition-colors">
-                        <img id="previewImage" src="" class="absolute inset-0 w-full h-full object-cover hidden">
-                        <div id="uploadPlaceholder" class="text-center p-4">
-                            <i class="fas fa-image text-3xl text-pink-300 mb-2"></i>
-                            <p class="text-xs text-gray-500">点击上传封面</p>
+                <!-- 图片上传 -->
+                <div class="image-upload-area">
+                    <div class="upload-box" onclick="document.getElementById('coverInput').click()">
+                        <img id="previewImage" class="preview-img hidden">
+                        <div id="uploadPlaceholder" class="upload-placeholder">
+                            <div class="upload-icon">🖼️</div>
+                            <p>点击上传封面</p>
                         </div>
-                        <input type="file" id="coverInput" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="app.handleImageUpload(this)">
                     </div>
+                    <input type="file" id="coverInput" accept="image/*" hidden onchange="app.handleImageUpload(this)">
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="col-span-2">
-                        <label class="block text-sm font-bold text-gray-600 mb-1">游戏名</label>
-                        <input type="text" id="title" required class="w-full px-4 py-2 rounded-lg border border-pink-200 focus:ring-2 focus:ring-pink-300 focus:outline-none bg-pink-50/50">
+                <!-- 表单字段 -->
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label>游戏名</label>
+                        <input type="text" id="title" required>
                     </div>
                     
-                    <div>
-                        <label class="block text-sm font-bold text-gray-600 mb-1">画师</label>
-                        <input type="text" id="artist" class="w-full px-4 py-2 rounded-lg border border-pink-200 focus:ring-2 focus:ring-pink-300 focus:outline-none bg-pink-50/50">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-gray-600 mb-1">剧本</label>
-                        <input type="text" id="writer" class="w-full px-4 py-2 rounded-lg border border-pink-200 focus:ring-2 focus:ring-pink-300 focus:outline-none bg-pink-50/50">
+                    <div class="form-group">
+                        <label>画师</label>
+                        <input type="text" id="artist">
                     </div>
                     
-                    <div class="col-span-2">
-                        <label class="block text-sm font-bold text-gray-600 mb-1">声优 (用逗号分隔)</label>
-                        <textarea id="voiceActors" rows="2" class="w-full px-4 py-2 rounded-lg border border-pink-200 focus:ring-2 focus:ring-pink-300 focus:outline-none bg-pink-50/50 text-sm"></textarea>
+                    <div class="form-group">
+                        <label>剧本</label>
+                        <input type="text" id="writer">
+                    </div>
+                    
+                    <div class="form-group full-width">
+                        <label>声优 (用逗号分隔)</label>
+                        <textarea id="voiceActors" rows="2"></textarea>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-bold text-gray-600 mb-1">发售/开发</label>
-                        <input type="text" id="developer" class="w-full px-4 py-2 rounded-lg border border-pink-200 focus:ring-2 focus:ring-pink-300 focus:outline-none bg-pink-50/50">
+                    <div class="form-group">
+                        <label>发售/开发</label>
+                        <input type="text" id="developer">
                     </div>
-                    <div>
-                        <label class="block text-sm font-bold text-gray-600 mb-1">发售时间</label>
-                        <input type="text" id="releaseDate" placeholder="例如: 2013年8月30日" class="w-full px-4 py-2 rounded-lg border border-pink-200 focus:ring-2 focus:ring-pink-300 focus:outline-none bg-pink-50/50">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-bold text-gray-600 mb-1">平台</label>
-                        <input type="text" id="platform" class="w-full px-4 py-2 rounded-lg border border-pink-200 focus:ring-2 focus:ring-pink-300 focus:outline-none bg-pink-50/50">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-gray-600 mb-1">游玩时间</label>
-                        <input type="text" id="playTime" class="w-full px-4 py-2 rounded-lg border border-pink-200 focus:ring-2 focus:ring-pink-300 focus:outline-none bg-pink-50/50">
+                    
+                    <div class="form-group">
+                        <label>发售时间</label>
+                        <input type="text" id="releaseDate" placeholder="例如: 2013年8月30日">
                     </div>
 
-                    <div class="col-span-2">
-                        <label class="block text-sm font-bold text-gray-600 mb-1">评价 (1-5)</label>
-                        <div class="flex gap-2 text-2xl cursor-pointer" id="starRatingInput">
-                            <i class="fas fa-star text-gray-300 hover:text-yellow-400" onclick="app.setRating(1)"></i>
-                            <i class="fas fa-star text-gray-300 hover:text-yellow-400" onclick="app.setRating(2)"></i>
-                            <i class="fas fa-star text-gray-300 hover:text-yellow-400" onclick="app.setRating(3)"></i>
-                            <i class="fas fa-star text-gray-300 hover:text-yellow-400" onclick="app.setRating(4)"></i>
-                            <i class="fas fa-star text-gray-300 hover:text-yellow-400" onclick="app.setRating(5)"></i>
+                    <div class="form-group">
+                        <label>平台</label>
+                        <input type="text" id="platform">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>游玩时间</label>
+                        <input type="text" id="playTime">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>评价</label>
+                        <div class="star-input" id="starRatingInput">
+                            <span class="star" data-val="1">☆</span>
+                            <span class="star" data-val="2">☆</span>
+                            <span class="star" data-val="3">☆</span>
+                            <span class="star" data-val="4">☆</span>
+                            <span class="star" data-val="5">☆</span>
                         </div>
                         <input type="hidden" id="rating" value="0">
                     </div>
 
-                    <div class="col-span-2">
-                        <label class="block text-sm font-bold text-gray-600 mb-1">感想/备注</label>
-                        <textarea id="review" rows="3" class="w-full px-4 py-2 rounded-lg border border-pink-200 focus:ring-2 focus:ring-pink-300 focus:outline-none bg-pink-50/50"></textarea>
+                    <div class="form-group full-width">
+                        <label>感想/备注</label>
+                        <textarea id="review" rows="3"></textarea>
                     </div>
                 </div>
 
-                <div class="pt-4 flex justify-end gap-3">
-                    <button type="button" onclick="app.closeModal('form')" class="px-6 py-2 rounded-full border border-gray-300 text-gray-600 hover:bg-gray-50 font-cute">取消</button>
-                    <button type="submit" class="px-6 py-2 rounded-full bg-pink-400 text-white hover:bg-pink-500 shadow-lg font-cute">保存</button>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="app.closeModal('form')">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Detail View Modal -->
-    <div id="detailModal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-pastel-pink/20 w-full max-w-3xl h-[90vh] md:h-auto md:max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl modal-animate relative flex flex-col md:flex-row bg-white">
+    <!-- 详情弹窗 -->
+    <div id="detailModal" class="modal hidden">
+        <div class="modal-content detail-content modal-animate">
+            <button class="close-btn detail-close" onclick="app.closeModal('detail')">×</button>
             
-            <button onclick="app.closeModal('detail')" class="absolute top-4 right-4 z-20 bg-white/80 rounded-full p-2 w-10 h-10 flex items-center justify-center hover:bg-white shadow-md text-gray-600 hover:text-pink-500">&times;</button>
-
-            <!-- Left: Image -->
-            <div class="w-full md:w-2/5 bg-gray-100 relative min-h-[300px] md:min-h-full">
-                <img id="detailImage" src="" class="absolute inset-0 w-full h-full object-cover">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent md:hidden"></div>
-                <h2 id="detailTitleOverlay" class="absolute bottom-4 left-4 text-white font-bold text-xl md:hidden drop-shadow-md"></h2>
-            </div>
-
-            <!-- Right: Info -->
-            <div class="w-full md:w-3/5 p-6 md:p-8 bg-white relative">
-                <!-- Decorative Bow -->
-                <div class="absolute -top-3 -right-3 text-4xl transform rotate-12 z-10">🎀</div>
-
-                <h2 id="detailTitle" class="hidden md:block text-3xl font-cute font-bold text-gray-800 mb-6 border-b-2 border-pink-100 pb-2"></h2>
-
-                <div class="space-y-4 text-sm md:text-base">
-                    <div class="flex gap-2">
-                        <span class="font-bold text-pink-500 w-16 shrink-0">画师:</span>
-                        <span id="detailArtist" class="text-gray-700"></span>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="font-bold text-pink-500 w-16 shrink-0">剧本:</span>
-                        <span id="detailWriter" class="text-gray-700"></span>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="font-bold text-pink-500 w-16 shrink-0">声优:</span>
-                        <div id="detailVoice" class="text-gray-700 whitespace-pre-line leading-relaxed"></div>
+            <div class="detail-layout">
+                <div class="detail-image-section">
+                    <img id="detailImage" src="" alt="游戏封面">
+                    <h2 id="detailTitleOverlay" class="mobile-title"></h2>
+                </div>
+                
+                <div class="detail-info-section">
+                    <div class="detail-bow">🎀</div>
+                    <h2 id="detailTitle" class="detail-title"></h2>
+                    
+                    <div class="info-list">
+                        <div class="info-item">
+                            <span class="info-label">画师</span>
+                            <span class="info-value" id="detailArtist"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">剧本</span>
+                            <span class="info-value" id="detailWriter"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">声优</span>
+                            <span class="info-value voice-actors" id="detailVoice"></span>
+                        </div>
+                        
+                        <div class="info-divider"></div>
+                        
+                        <div class="info-grid-2">
+                            <div class="info-item">
+                                <span class="info-label small">发售/开发</span>
+                                <span class="info-value" id="detailDev"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label small">平台</span>
+                                <span class="info-value" id="detailPlatform"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label small">发售时间</span>
+                                <span class="info-value" id="detailDate"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label small">游玩时间</span>
+                                <span class="info-value" id="detailTime"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <span class="info-label small">评价</span>
+                            <div class="star-display" id="detailRating"></div>
+                        </div>
+                        
+                        <div class="review-box">
+                            <span class="info-label small">感想</span>
+                            <p id="detailReview"></p>
+                        </div>
                     </div>
                     
-                    <div class="h-px bg-gray-100 my-2"></div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <span class="block text-xs text-gray-400 uppercase tracking-wider">发售/开发</span>
-                            <span id="detailDev" class="font-medium text-gray-800"></span>
-                        </div>
-                        <div>
-                            <span class="block text-xs text-gray-400 uppercase tracking-wider">平台</span>
-                            <span id="detailPlatform" class="font-medium text-gray-800"></span>
-                        </div>
-                        <div>
-                            <span class="block text-xs text-gray-400 uppercase tracking-wider">发售时间</span>
-                            <span id="detailDate" class="font-medium text-gray-800"></span>
-                        </div>
-                        <div>
-                            <span class="block text-xs text-gray-400 uppercase tracking-wider">游玩时间</span>
-                            <span id="detailTime" class="font-medium text-gray-800"></span>
-                        </div>
+                    <div class="detail-actions">
+                        <button class="text-btn edit" onclick="app.editCurrentGame()">✏️ 编辑</button>
+                        <button class="text-btn delete" onclick="app.deleteCurrentGame()">🗑️ 删除</button>
                     </div>
-
-                    <div>
-                        <span class="block text-xs text-gray-400 uppercase tracking-wider mb-1">评价</span>
-                        <div id="detailRating" class="text-xl"></div>
-                    </div>
-
-                    <div class="bg-pink-50 p-4 rounded-xl border border-pink-100">
-                        <span class="block text-xs text-pink-400 font-bold uppercase tracking-wider mb-1">感想</span>
-                        <p id="detailReview" class="text-gray-600 italic"></p>
-                    </div>
-                </div>
-
-                <div class="mt-6 flex justify-end gap-3">
-                    <button onclick="app.editCurrentGame()" class="text-blue-400 hover:text-blue-600 font-cute text-sm"><i class="fas fa-edit"></i> 编辑</button>
-                    <button onclick="app.deleteCurrentGame()" class="text-red-400 hover:text-red-600 font-cute text-sm"><i class="fas fa-trash"></i> 删除</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // --- Application Logic ---
-        const app = {
-            data: [],
-            currentDetailId: null,
-            tempImageBase64: null,
-
-            init() {
-                // Load initial sample data if empty
-                if (this.data.length === 0) {
-                    // Optional: Pre-load some dummy data structure or leave empty
-                    // this.loadSampleData(); 
-                }
-                this.render();
-                
-                // Search Listener
-                document.getElementById('searchInput').addEventListener('input', (e) => {
-                    this.render(e.target.value);
-                });
-            },
-
-            // --- Data Management ---
-            addGame(game) {
-                this.data.push({ ...game, id: Date.now().toString() });
-                this.render();
-            },
-
-            updateGame(id, updatedGame) {
-                const index = this.data.findIndex(g => g.id === id);
-                if (index !== -1) {
-                    this.data[index] = { ...updatedGame, id };
-                    this.render();
-                }
-            },
-
-            deleteGame(id) {
-                if(confirm('确定要删除这个游戏记录吗？')) {
-                    this.data = this.data.filter(g => g.id !== id);
-                    this.closeModal('detail');
-                    this.render();
-                }
-            },
-
-            // --- UI Rendering ---
-            render(filterText = '') {
-                const grid = document.getElementById('gameGrid');
-                const empty = document.getElementById('emptyState');
-                grid.innerHTML = '';
-
-                const filteredData = this.data.filter(game => {
-                    if (!filterText) return true;
-                    const text = filterText.toLowerCase();
-                    return (
-                        (game.title && game.title.toLowerCase().includes(text)) ||
-                        (game.writer && game.writer.toLowerCase().includes(text)) ||
-                        (game.artist && game.artist.toLowerCase().includes(text)) ||
-                        (game.developer && game.developer.toLowerCase().includes(text)) ||
-                        (game.voiceActors && game.voiceActors.toLowerCase().includes(text))
-                    );
-                });
-
-                if (filteredData.length === 0) {
-                    empty.classList.remove('hidden');
-                } else {
-                    empty.classList.add('hidden');
-                    filteredData.forEach(game => {
-                        const card = document.createElement('div');
-                        card.className = 'lace-border rounded-2xl overflow-hidden cursor-pointer card-hover transition-all duration-300 bg-white relative group';
-                        card.onclick = () => this.showDetail(game.id);
-                        
-                        // Image handling
-                        const imgHtml = game.image 
-                            ? `<img src="${game.image}" class="w-full h-48 object-cover">` 
-                            : `<div class="w-full h-48 bg-pink-50 flex items-center justify-center text-pink-200 text-4xl"><i class="fas fa-gamepad"></i></div>`;
-
-                        card.innerHTML = `
-                            <div class="bow-decoration relative">
-                                ${imgHtml}
-                                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
-                            </div>
-                            <div class="p-3 text-center">
-                                <h3 class="font-cute font-bold text-gray-700 truncate">${game.title || 'Unknown Game'}</h3>
-                                <p class="text-xs text-gray-400 mt-1 truncate">${game.writer || ''}</p>
-                            </div>
-                        `;
-                        grid.appendChild(card);
-                    });
-                }
-            },
-
-            // --- Modal & Form Handling ---
-            openModal(type, id = null) {
-                if (type === 'add') {
-                    this.resetForm();
-                    document.getElementById('formModal').classList.remove('hidden');
-                } else if (type === 'edit') {
-                    // Handled by editCurrentGame
-                }
-            },
-
-            closeModal(type) {
-                document.getElementById(`${type}Modal`).classList.add('hidden');
-            },
-
-            resetForm() {
-                document.getElementById('gameForm').reset();
-                document.getElementById('gameId').value = '';
-                this.tempImageBase64 = null;
-                document.getElementById('previewImage').classList.add('hidden');
-                document.getElementById('uploadPlaceholder').classList.remove('hidden');
-                this.setRating(0);
-            },
-
-            handleImageUpload(input) {
-                if (input.files && input.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        this.tempImageBase64 = e.target.result;
-                        const preview = document.getElementById('previewImage');
-                        preview.src = e.target.result;
-                        preview.classList.remove('hidden');
-                        document.getElementById('uploadPlaceholder').classList.add('hidden');
-                    };
-                    reader.readAsDataURL(input.files[0]);
-                }
-            },
-
-            setRating(val) {
-                document.getElementById('rating').value = val;
-                const stars = document.getElementById('starRatingInput').children;
-                for (let i = 0; i < 5; i++) {
-                    if (i < val) {
-                        stars[i].classList.remove('text-gray-300');
-                        stars[i].classList.add('text-yellow-400');
-                    } else {
-                        stars[i].classList.remove('text-yellow-400');
-                        stars[i].classList.add('text-gray-300');
-                    }
-                }
-            },
-
-            saveGame(e) {
-                e.preventDefault();
-                const id = document.getElementById('gameId').value;
-                
-                const gameData = {
-                    title: document.getElementById('title').value,
-                    artist: document.getElementById('artist').value,
-                    writer: document.getElementById('writer').value,
-                    voiceActors: document.getElementById('voiceActors').value,
-                    developer: document.getElementById('developer').value,
-                    releaseDate: document.getElementById('releaseDate').value,
-                    platform: document.getElementById('platform').value,
-                    playTime: document.getElementById('playTime').value,
-                    rating: document.getElementById('rating').value,
-                    review: document.getElementById('review').value,
-                    image: this.tempImageBase64
-                };
-
-                if (id) {
-                    this.updateGame(id, gameData);
-                } else {
-                    this.addGame(gameData);
-                }
-                this.closeModal('form');
-            },
-
-            // --- Detail View ---
-            showDetail(id) {
-                const game = this.data.find(g => g.id === id);
-                if (!game) return;
-
-                this.currentDetailId = id;
-                document.getElementById('detailTitle').textContent = game.title;
-                document.getElementById('detailTitleOverlay').textContent = game.title;
-                document.getElementById('detailImage').src = game.image || '';
-                document.getElementById('detailArtist').textContent = game.artist || '-';
-                document.getElementById('detailWriter').textContent = game.writer || '-';
-                document.getElementById('detailVoice').textContent = game.voiceActors || '-';
-                document.getElementById('detailDev').textContent = game.developer || '-';
-                document.getElementById('detailDate').textContent = game.releaseDate || '-';
-                document.getElementById('detailPlatform').textContent = game.platform || '-';
-                document.getElementById('detailTime').textContent = game.playTime || '-';
-                document.getElementById('detailReview').textContent = game.review || '暂无感想';
-
-                // Render Stars
-                const ratingContainer = document.getElementById('detailRating');
-                ratingContainer.innerHTML = '';
-                const stars = parseInt(game.rating) || 0;
-                for(let i=0; i<5; i++) {
-                    const star = document.createElement('i');
-                    star.className = `fas fa-star ${i < stars ? 'star-filled' : 'star-empty'} mr-1`;
-                    ratingContainer.appendChild(star);
-                }
-
-                document.getElementById('detailModal').classList.remove('hidden');
-            },
-
-            editCurrentGame() {
-                const game = this.data.find(g => g.id === this.currentDetailId);
-                if(!game) return;
-
-                this.closeModal('detail');
-                this.resetForm();
-
-                document.getElementById('gameId').value = game.id;
-                document.getElementById('title').value = game.title;
-                document.getElementById('artist').value = game.artist || '';
-                document.getElementById('writer').value = game.writer || '';
-                document.getElementById('voiceActors').value = game.voiceActors || '';
-                document.getElementById('developer').value = game.developer || '';
-                document.getElementById('releaseDate').value = game.releaseDate || '';
-                document.getElementById('platform').value = game.platform || '';
-                document.getElementById('playTime').value = game.playTime || '';
-                document.getElementById('review').value = game.review || '';
-                
-                this.setRating(game.rating || 0);
-
-                if(game.image) {
-                    this.tempImageBase64 = game.image;
-                    document.getElementById('previewImage').src = game.image;
-                    document.getElementById('previewImage').classList.remove('hidden');
-                    document.getElementById('uploadPlaceholder').classList.add('hidden');
-                }
-
-                document.getElementById('formModal').classList.remove('hidden');
-            },
-
-            deleteCurrentGame() {
-                this.deleteGame(this.currentDetailId);
-            },
-
-            // --- Import / Export ---
-            exportData() {
-                if(this.data.length === 0) {
-                    alert("没有数据可导出！");
-                    return;
-                }
-                const dataStr = JSON.stringify(this.data, null, 2);
-                const blob = new Blob([dataStr], { type: "application/json" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `otome-collection-${new Date().toISOString().slice(0,10)}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            },
-
-            importData(input) {
-                const file = input.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const json = JSON.parse(e.target.result);
-                        if (Array.isArray(json)) {
-                            // Simple validation check
-                            if(confirm(`确定要导入 ${json.length} 条记录吗？这将覆盖当前数据。`)) {
-                                this.data = json;
-                                this.render();
-                                alert("导入成功！");
-                            }
-                        } else {
-                            alert("文件格式不正确");
-                        }
-                    } catch (err) {
-                        console.error(err);
-                        alert("无法读取文件");
-                    }
-                    input.value = ''; // Reset
-                };
-                reader.readAsText(file);
-            }
-        };
-
-        // Start App
-        document.addEventListener('DOMContentLoaded', () => {
-            app.init();
-        });
-
-    </script>
+    <script src="js/app.js"></script>
 </body>
 </html>
 
