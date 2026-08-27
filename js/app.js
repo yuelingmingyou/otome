@@ -5,6 +5,7 @@ const app = {
     tempImageBase64: null,
     voiceTags: [],
     releaseTags: [],
+    currentRating: 0,
 
     // ===== 初始化 =====
     init() {
@@ -39,35 +40,66 @@ const app = {
         }
     },
 
-    // ===== 星级评分 =====
+    // ===== 星级评分 - 支持半星 =====
     initStarRating() {
-        const stars = document.querySelectorAll('#starRatingInput .star');
-        stars.forEach((star, index) => {
-            star.addEventListener('click', () => this.setRating(index + 1));
-            star.addEventListener('mouseenter', () => this.highlightStars(index + 1));
-        });
+        const container = document.getElementById('starRatingInput');
+        container.innerHTML = '';
         
-        document.getElementById('starRatingInput').addEventListener('mouseleave', () => {
-            const currentRating = parseInt(document.getElementById('rating').value) || 0;
-            this.highlightStars(currentRating);
+        for (let i = 1; i <= 5; i++) {
+            const star = document.createElement('span');
+            star.className = 'star';
+            star.dataset.value = i;
+            
+            // 点击事件：判断点击位置
+            star.addEventListener('click', (e) => {
+                const rect = star.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const isLeftHalf = x < rect.width / 2;
+                const value = isLeftHalf ? i - 0.5 : i;
+                this.setRating(value);
+            });
+            
+            // 鼠标移动预览
+            star.addEventListener('mousemove', (e) => {
+                const rect = star.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const isLeftHalf = x < rect.width / 2;
+                const value = isLeftHalf ? i - 0.5 : i;
+                this.previewRating(value);
+            });
+            
+            container.appendChild(star);
+        }
+        
+        // 鼠标离开恢复实际评分
+        container.addEventListener('mouseleave', () => {
+            this.renderStars(this.currentRating);
         });
     },
 
-    setRating(val) {
-        document.getElementById('rating').value = val;
-        this.highlightStars(val);
+    setRating(value) {
+        this.currentRating = value;
+        document.getElementById('rating').value = value;
+        this.renderStars(value);
     },
 
-    highlightStars(count) {
+    previewRating(value) {
+        this.renderStars(value, true);
+    },
+
+    renderStars(value, isPreview = false) {
         const stars = document.querySelectorAll('#starRatingInput .star');
+        
         stars.forEach((star, index) => {
-            if (index < count) {
-                star.textContent = '★';
-                star.classList.add('active');
-            } else {
-                star.textContent = '☆';
-                star.classList.remove('active');
+            const starValue = index + 1;
+            star.className = 'star';
+            
+            if (value >= starValue) {
+                star.classList.add('full');
+            } else if (value >= starValue - 0.5) {
+                star.classList.add('half');
             }
+            // 否则保持空星（只有::before）
         });
     },
 
@@ -248,17 +280,35 @@ const app = {
                     ? `<img src="${game.image}" class="card-image" alt="${game.title}">` 
                     : `<div class="card-image-placeholder">🎮</div>`;
 
+                const rating = parseFloat(game.rating) || 0;
+                const starsHtml = this.renderMiniStars(rating);
+
                 card.innerHTML = `
                     ${imgHtml}
                     <div class="card-info">
                         <div class="card-title">${this.escapeHtml(game.title) || '未命名游戏'}</div>
                         <div class="card-meta">${this.escapeHtml(game.writer) || '未知剧本'}</div>
+                        ${rating > 0 ? `<div class="card-rating">${starsHtml} <span>${rating.toFixed(1)}</span></div>` : ''}
                     </div>
                 `;
                 
                 grid.appendChild(card);
             });
         }
+    },
+
+    renderMiniStars(rating) {
+        let html = '';
+        for (let i = 1; i <= 5; i++) {
+            if (rating >= i) {
+                html += '★';
+            } else if (rating >= i - 0.5) {
+                html += '⯪';
+            } else {
+                html += '☆';
+            }
+        }
+        return html;
     },
 
     escapeHtml(text) {
@@ -286,6 +336,7 @@ const app = {
         document.getElementById('gameForm').reset();
         document.getElementById('gameId').value = '';
         this.tempImageBase64 = null;
+        this.currentRating = 0;
         
         const preview = document.getElementById('previewImage');
         preview.src = '';
@@ -297,7 +348,7 @@ const app = {
         this.renderVoiceTags();
         this.renderReleaseTags();
         
-        this.setRating(0);
+        this.renderStars(0);
     },
 
     // ===== 图片处理 =====
@@ -329,7 +380,7 @@ const app = {
             developer: document.getElementById('developer').value.trim(),
             releaseDate: document.getElementById('releaseDate').value,
             playTime: document.getElementById('playTime').value.trim(),
-            rating: document.getElementById('rating').value,
+            rating: this.currentRating,
             review: document.getElementById('review').value.trim(),
             image: this.tempImageBase64
         };
@@ -348,14 +399,13 @@ const app = {
         this.closeModal('form');
     },
 
-    // ===== 详情展示 - 修复滚动 =====
+    // ===== 详情展示 =====
     showDetail(id) {
         const game = this.data.find(g => g.id === id);
         if (!game) return;
 
         this.currentDetailId = id;
         
-        // 填充基础数据
         document.getElementById('detailTitle').textContent = game.title || '未命名';
         document.getElementById('detailTitleOverlay').textContent = game.title || '未命名';
         
@@ -416,18 +466,45 @@ const app = {
             dateContainer.textContent = '-';
         }
 
-        // 渲染星级
+        // 渲染星级 - 支持半星
         const ratingContainer = document.getElementById('detailRating');
         ratingContainer.innerHTML = '';
-        const stars = parseInt(game.rating) || 0;
-        for (let i = 0; i < 5; i++) {
-            const star = document.createElement('span');
-            star.textContent = i < stars ? '★' : '☆';
-            star.style.color = i < stars ? '#FFD700' : '#ddd';
-            ratingContainer.appendChild(star);
+        const rating = parseFloat(game.rating) || 0;
+        
+        // 数字评分
+        const ratingNum = document.createElement('span');
+        ratingNum.className = 'rating-number';
+        ratingNum.textContent = rating > 0 ? rating.toFixed(1) : '未评分';
+        ratingContainer.appendChild(ratingNum);
+        
+        // 星星
+        if (rating > 0) {
+            for (let i = 1; i <= 5; i++) {
+                if (rating >= i) {
+                    // 满星
+                    const star = document.createElement('span');
+                    star.className = 'star-full';
+                    star.textContent = '★';
+                    ratingContainer.appendChild(star);
+                } else if (rating >= i - 0.5) {
+                    // 半星
+                    const wrapper = document.createElement('span');
+                    wrapper.className = 'star-half-wrapper';
+                    wrapper.innerHTML = `
+                        <span class="star-empty">☆</span>
+                        <span class="star-half-fill">★</span>
+                    `;
+                    ratingContainer.appendChild(wrapper);
+                } else {
+                    // 空星
+                    const star = document.createElement('span');
+                    star.className = 'star-empty';
+                    star.textContent = '☆';
+                    ratingContainer.appendChild(star);
+                }
+            }
         }
 
-        // 显示弹窗
         document.getElementById('detailModal').classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     },
@@ -440,7 +517,6 @@ const app = {
         this.closeModal('detail');
         this.resetForm();
 
-        // 填充基础字段
         document.getElementById('gameId').value = game.id;
         document.getElementById('title').value = game.title || '';
         document.getElementById('artist').value = game.artist || '';
@@ -449,9 +525,9 @@ const app = {
         document.getElementById('playTime').value = game.playTime || '';
         document.getElementById('review').value = game.review || '';
         
-        this.setRating(game.rating || 0);
+        const savedRating = parseFloat(game.rating) || 0;
+        this.setRating(savedRating);
 
-        // 恢复图片
         if (game.image) {
             this.tempImageBase64 = game.image;
             const preview = document.getElementById('previewImage');
@@ -460,7 +536,6 @@ const app = {
             document.getElementById('uploadPlaceholder').classList.add('hidden');
         }
 
-        // 恢复声优标签
         if (game.voiceActors) {
             try {
                 this.voiceTags = JSON.parse(game.voiceActors);
@@ -468,7 +543,6 @@ const app = {
             } catch (e) {}
         }
 
-        // 恢复发售标签
         if (game.releaseDate) {
             try {
                 this.releaseTags = JSON.parse(game.releaseDate);
@@ -492,7 +566,7 @@ const app = {
         }
         
         const exportObj = {
-            version: '1.0',
+            version: '1.1',
             exportDate: new Date().toISOString(),
             games: this.data
         };
