@@ -13,6 +13,8 @@
     --gray-300: #DEE2E6;
     --gray-600: #6C757D;
     --gray-800: #343A40;
+    --star-gold: #FFD700;
+    --star-gray: #ddd;
 }
 
 * {
@@ -271,17 +273,53 @@ body {
     text-align: center;
 }
 
-/* 卡片评分 - 独立规则，不在 .card-info 里面 */
+/* 卡片评分 - 使用CSS实现半星，兼容所有设备 */
 .card-rating {
     margin-top: 0.3rem;
-    font-size: 0.85rem;
-    color: #FFD700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
 }
 
-.card-rating span {
+.card-rating .star-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.card-rating .star-wrapper .star-bg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: var(--star-gray);
+}
+
+.card-rating .star-wrapper .star-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: var(--star-gold);
+    overflow: hidden;
+    width: 0;
+}
+
+.card-rating .star-wrapper.full .star-fill {
+    width: 100%;
+}
+
+.card-rating .star-wrapper.half .star-fill {
+    width: 50%;
+}
+
+.card-rating .rating-num {
     color: var(--gray-600);
-    margin-left: 0.3rem;
-    font-size: 0.8rem;
+    margin-left: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
 }
 
 .card-title {
@@ -637,7 +675,7 @@ form {
     left: 0;
     top: 0;
     width: 100%;
-    color: #ddd;
+    color: var(--star-gray);
     z-index: 1;
 }
 
@@ -648,7 +686,7 @@ form {
     left: 0;
     top: 0;
     width: 100%;
-    color: #FFD700;
+    color: var(--star-gold);
     z-index: 2;
 }
 
@@ -660,13 +698,22 @@ form {
     top: 0;
     width: 50%;
     overflow: hidden;
-    color: #FFD700;
+    color: var(--star-gold);
     z-index: 2;
 }
 
 /* 悬停效果 */
 .star-input .star:hover {
     transform: scale(1.15);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
 }
 
 /* ===== 详情页星级显示 ===== */
@@ -684,44 +731,37 @@ form {
     font-weight: 600;
 }
 
-.star-display .star-full {
-    color: #FFD700;
-}
-
-.star-display .star-half-wrapper {
+/* 详情页星星通用 */
+.star-display .star-icon {
     position: relative;
     display: inline-block;
     width: 1em;
     height: 1em;
+    line-height: 1;
 }
 
-.star-display .star-half-wrapper .star-empty {
+.star-display .star-icon .star-bg {
     position: absolute;
     left: 0;
     top: 0;
-    color: #ddd;
+    color: var(--star-gray);
 }
 
-.star-display .star-half-wrapper .star-half-fill {
+.star-display .star-icon .star-fill {
     position: absolute;
     left: 0;
     top: 0;
-    width: 50%;
+    color: var(--star-gold);
     overflow: hidden;
-    color: #FFD700;
+    width: 0;
 }
 
-.star-display .star-empty {
-    color: #ddd;
+.star-display .star-icon.full .star-fill {
+    width: 100%;
 }
 
-.form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid #eee;
+.star-display .star-icon.half .star-fill {
+    width: 50%;
 }
 
 /* ===== 详情弹窗 ===== */
