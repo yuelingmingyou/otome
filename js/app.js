@@ -3,9 +3,12 @@ const app = {
     data: [],
     currentDetailId: null,
     tempImageBase64: null,
+    voiceTags: [],      // 临时存储声优标签
+    releaseTags: [],    // 临时存储发售标签
 
     // ===== 初始化 =====
     init() {
+        this.loadFromStorage();
         this.render();
         
         // 搜索监听
@@ -15,6 +18,28 @@ const app = {
 
         // 星级评分交互
         this.initStarRating();
+    },
+
+    // ===== LocalStorage 持久化 =====
+    loadFromStorage() {
+        try {
+            const saved = localStorage.getItem('otomeCollection');
+            if (saved) {
+                this.data = JSON.parse(saved);
+            }
+        } catch (e) {
+            console.error('加载数据失败:', e);
+            this.data = [];
+        }
+    },
+
+    saveToStorage() {
+        try {
+            localStorage.setItem('otomeCollection', JSON.stringify(this.data));
+        } catch (e) {
+            console.error('保存数据失败:', e);
+            alert('数据保存失败，可能是存储空间不足');
+        }
     },
 
     // ===== 星级评分初始化 =====
@@ -54,12 +79,125 @@ const app = {
         });
     },
 
+    // ===== 声优标签系统 =====
+    handleVoiceInput(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            this.addVoiceTagFromInput();
+        }
+    },
+
+    addVoiceTagFromInput() {
+        const input = document.getElementById('voiceInput');
+        const value = input.value.trim();
+        
+        if (!value) return;
+        
+        // 解析格式：角色名（声优名）
+        const match = value.match(/^(.+?)（(.+?)）$/);
+        if (!match) {
+            alert('格式错误！请使用：角色名（声优名）');
+            return;
+        }
+        
+        const [_, charName, seiyuuName] = match;
+        
+        // 检查重复
+        if (this.voiceTags.some(t => t.char === charName && t.seiyuu === seiyuuName)) {
+            alert('该声优已添加！');
+            return;
+        }
+        
+        this.voiceTags.push({ char: charName, seiyuu: seiyuuName });
+        this.renderVoiceTags();
+        input.value = '';
+    },
+
+    removeVoiceTag(index) {
+        this.voiceTags.splice(index, 1);
+        this.renderVoiceTags();
+    },
+
+    renderVoiceTags() {
+        const container = document.getElementById('voiceTags');
+        container.innerHTML = '';
+        
+        this.voiceTags.forEach((tag, index) => {
+            const el = document.createElement('span');
+            el.className = 'tag tag-voice';
+            el.innerHTML = `
+                <span>${tag.char}</span>
+                <span class="tag-seiyuu">（${tag.seiyuu}）</span>
+                <span class="tag-remove" onclick="app.removeVoiceTag(${index})">×</span>
+            `;
+            container.appendChild(el);
+        });
+        
+        // 更新隐藏字段
+        document.getElementById('voiceActors').value = JSON.stringify(this.voiceTags);
+    },
+
+    // ===== 发售日期标签系统 =====
+    handleReleaseInput(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            this.addReleaseTagFromInput();
+        }
+    },
+
+    addReleaseTagFromInput() {
+        const input = document.getElementById('releaseInput');
+        const value = input.value.trim();
+        
+        if (!value) return;
+        
+        // 简单验证格式
+        if (!value.includes('：') && !value.includes(':')) {
+            alert('格式错误！请使用：2011年7月28日：PSP版');
+            return;
+        }
+        
+        // 检查重复
+        if (this.releaseTags.includes(value)) {
+            alert('该发售记录已添加！');
+            return;
+        }
+        
+        this.releaseTags.push(value);
+        this.renderReleaseTags();
+        input.value = '';
+    },
+
+    removeReleaseTag(index) {
+        this.releaseTags.splice(index, 1);
+        this.renderReleaseTags();
+    },
+
+    renderReleaseTags() {
+        const container = document.getElementById('releaseTags');
+        container.innerHTML = '';
+        
+        this.releaseTags.forEach((tag, index) => {
+            const el = document.createElement('span');
+            el.className = 'tag';
+            el.innerHTML = `
+                <span>${tag}</span>
+                <span class="tag-remove" onclick="app.removeReleaseTag(${index})">×</span>
+            `;
+            container.appendChild(el);
+        });
+        
+        // 更新隐藏字段
+        document.getElementById('releaseDate').value = JSON.stringify(this.releaseTags);
+    },
+
     // ===== 数据操作 =====
     addGame(game) {
         this.data.push({
             ...game,
             id: Date.now().toString() + Math.random().toString(36).substr(2, 9)
         });
+        this.saveToStorage();
         this.render();
     },
 
@@ -67,6 +205,7 @@ const app = {
         const index = this.data.findIndex(g => g.id === id);
         if (index !== -1) {
             this.data[index] = { ...updatedGame, id };
+            this.saveToStorage();
             this.render();
         }
     },
@@ -74,6 +213,7 @@ const app = {
     deleteGame(id) {
         if (confirm('确定要删除这个游戏记录吗？🎀')) {
             this.data = this.data.filter(g => g.id !== id);
+            this.saveToStorage();
             this.closeModal('detail');
             this.render();
         }
@@ -89,14 +229,25 @@ const app = {
         const filteredData = this.data.filter(game => {
             if (!filterText) return true;
             const text = filterText.toLowerCase();
-            const searchable = [
+            
+            // 构建可搜索文本
+            let searchable = [
                 game.title,
                 game.writer,
                 game.artist,
                 game.developer,
-                game.voiceActors,
                 game.platform
             ].join(' ').toLowerCase();
+            
+            // 添加声优名到搜索（只搜声优名，不搜角色名）
+            if (game.voiceActors) {
+                try {
+                    const voiceList = JSON.parse(game.voiceActors);
+                    const seiyuuNames = voiceList.map(v => v.seiyuu).join(' ');
+                    searchable += ' ' + seiyuuNames.toLowerCase();
+                } catch (e) {}
+            }
+            
             return searchable.includes(text);
         });
 
@@ -113,7 +264,7 @@ const app = {
                 card.onclick = () => this.showDetail(game.id);
 
                 const imgHtml = game.image 
-                    ? `<img src="${game.image}" class="card-image" alt="${game.title}">`
+                    ? `<img src="${game.image}" class="card-image" alt="${game.title}">` 
                     : `<div class="card-image-placeholder">🎮</div>`;
 
                 card.innerHTML = `
@@ -155,10 +306,17 @@ const app = {
         document.getElementById('gameId').value = '';
         this.tempImageBase64 = null;
         
+        // 重置图片
         const preview = document.getElementById('previewImage');
         preview.src = '';
         preview.classList.add('hidden');
         document.getElementById('uploadPlaceholder').classList.remove('hidden');
+        
+        // 重置标签
+        this.voiceTags = [];
+        this.releaseTags = [];
+        this.renderVoiceTags();
+        this.renderReleaseTags();
         
         this.setRating(0);
     },
@@ -183,21 +341,20 @@ const app = {
         e.preventDefault();
         
         const id = document.getElementById('gameId').value;
+        
         const gameData = {
             title: document.getElementById('title').value.trim(),
             artist: document.getElementById('artist').value.trim(),
             writer: document.getElementById('writer').value.trim(),
-            voiceActors: document.getElementById('voiceActors').value.trim(),
+            voiceActors: document.getElementById('voiceActors').value, // JSON字符串
             developer: document.getElementById('developer').value.trim(),
-            releaseDate: document.getElementById('releaseDate').value.trim(),
-            platform: document.getElementById('platform').value.trim(),
+            releaseDate: document.getElementById('releaseDate').value, // JSON字符串
             playTime: document.getElementById('playTime').value.trim(),
             rating: document.getElementById('rating').value,
             review: document.getElementById('review').value.trim(),
             image: this.tempImageBase64
         };
 
-        // 验证必填
         if (!gameData.title) {
             alert('请输入游戏名！');
             return;
@@ -219,19 +376,58 @@ const app = {
 
         this.currentDetailId = id;
         
-        // 填充数据
         document.getElementById('detailTitle').textContent = game.title || '未命名';
         document.getElementById('detailTitleOverlay').textContent = game.title || '未命名';
         document.getElementById('detailImage').src = game.image || '';
         document.getElementById('detailImage').style.display = game.image ? 'block' : 'none';
         document.getElementById('detailArtist').textContent = game.artist || '-';
         document.getElementById('detailWriter').textContent = game.writer || '-';
-        document.getElementById('detailVoice').textContent = game.voiceActors || '-';
         document.getElementById('detailDev').textContent = game.developer || '-';
-        document.getElementById('detailDate').textContent = game.releaseDate || '-';
-        document.getElementById('detailPlatform').textContent = game.platform || '-';
         document.getElementById('detailTime').textContent = game.playTime || '-';
         document.getElementById('detailReview').textContent = game.review || '暂无感想';
+
+        // 渲染声优（带角色名）
+        const voiceContainer = document.getElementById('detailVoice');
+        voiceContainer.innerHTML = '';
+        if (game.voiceActors) {
+            try {
+                const voiceList = JSON.parse(game.voiceActors);
+                voiceList.forEach(v => {
+                    const line = document.createElement('div');
+                    line.className = 'voice-line';
+                    line.innerHTML = `
+                        <span class="voice-char">${this.escapeHtml(v.char)}</span>
+                        <span class="voice-sep">（声：</span>
+                        <span class="voice-seiyuu">${this.escapeHtml(v.seiyuu)}</span>
+                        <span class="voice-sep">）</span>
+                    `;
+                    voiceContainer.appendChild(line);
+                });
+            } catch (e) {
+                voiceContainer.textContent = game.voiceActors;
+            }
+        } else {
+            voiceContainer.textContent = '-';
+        }
+
+        // 渲染发售日期（多行）
+        const dateContainer = document.getElementById('detailDate');
+        dateContainer.innerHTML = '';
+        if (game.releaseDate) {
+            try {
+                const dateList = JSON.parse(game.releaseDate);
+                dateList.forEach(d => {
+                    const line = document.createElement('div');
+                    line.className = 'release-line';
+                    line.textContent = d;
+                    dateContainer.appendChild(line);
+                });
+            } catch (e) {
+                dateContainer.textContent = game.releaseDate;
+            }
+        } else {
+            dateContainer.textContent = '-';
+        }
 
         // 渲染星级
         const ratingContainer = document.getElementById('detailRating');
@@ -248,7 +444,7 @@ const app = {
         document.body.style.overflow = 'hidden';
     },
 
-    // ===== 编辑和删除当前游戏 =====
+    // ===== 编辑当前游戏 =====
     editCurrentGame() {
         const game = this.data.find(g => g.id === this.currentDetailId);
         if (!game) return;
@@ -256,26 +452,40 @@ const app = {
         this.closeModal('detail');
         this.resetForm();
 
-        // 填充表单
+        // 填充基础字段
         document.getElementById('gameId').value = game.id;
         document.getElementById('title').value = game.title || '';
         document.getElementById('artist').value = game.artist || '';
         document.getElementById('writer').value = game.writer || '';
-        document.getElementById('voiceActors').value = game.voiceActors || '';
         document.getElementById('developer').value = game.developer || '';
-        document.getElementById('releaseDate').value = game.releaseDate || '';
-        document.getElementById('platform').value = game.platform || '';
         document.getElementById('playTime').value = game.playTime || '';
         document.getElementById('review').value = game.review || '';
         
         this.setRating(game.rating || 0);
 
+        // 恢复图片
         if (game.image) {
             this.tempImageBase64 = game.image;
             const preview = document.getElementById('previewImage');
             preview.src = game.image;
             preview.classList.remove('hidden');
             document.getElementById('uploadPlaceholder').classList.add('hidden');
+        }
+
+        // 恢复声优标签
+        if (game.voiceActors) {
+            try {
+                this.voiceTags = JSON.parse(game.voiceActors);
+                this.renderVoiceTags();
+            } catch (e) {}
+        }
+
+        // 恢复发售标签
+        if (game.releaseDate) {
+            try {
+                this.releaseTags = JSON.parse(game.releaseDate);
+                this.renderReleaseTags();
+            } catch (e) {}
         }
 
         document.getElementById('formModal').classList.remove('hidden');
@@ -293,7 +503,13 @@ const app = {
             return;
         }
         
-        const dataStr = JSON.stringify(this.data, null, 2);
+        const exportObj = {
+            version: '1.0',
+            exportDate: new Date().toISOString(),
+            games: this.data
+        };
+        
+        const dataStr = JSON.stringify(exportObj, null, 2);
         const blob = new Blob([dataStr], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         
@@ -314,12 +530,18 @@ const app = {
         reader.onload = (e) => {
             try {
                 const json = JSON.parse(e.target.result);
-                if (!Array.isArray(json)) {
+                
+                // 支持两种格式：直接数组或带games的对象
+                let games = [];
+                if (Array.isArray(json)) {
+                    games = json;
+                } else if (json.games && Array.isArray(json.games)) {
+                    games = json.games;
+                } else {
                     throw new Error('格式错误');
                 }
 
-                // 简单验证数据结构
-                const validGames = json.filter(g => g.title);
+                const validGames = games.filter(g => g.title);
                 
                 if (validGames.length === 0) {
                     alert('没有找到有效的游戏数据！');
@@ -328,6 +550,7 @@ const app = {
 
                 if (confirm(`确定导入 ${validGames.length} 条游戏记录吗？这将覆盖当前所有数据！`)) {
                     this.data = validGames;
+                    this.saveToStorage();
                     this.render();
                     alert(`成功导入 ${validGames.length} 条记录！🎀`);
                 }
@@ -335,7 +558,7 @@ const app = {
                 console.error(err);
                 alert('导入失败：文件格式不正确或已损坏');
             }
-            input.value = ''; // 重置input
+            input.value = '';
         };
         reader.readAsText(file);
     }
