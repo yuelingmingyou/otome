@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎀 Otome Collection</title>
-    <!-- 关键修复：使用相对路径 ./ -->
     <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
@@ -92,9 +91,15 @@
                         <input type="text" id="writer">
                     </div>
                     
+                    <!-- 声优标签系统 -->
                     <div class="form-group full-width">
-                        <label>声优 (用逗号分隔)</label>
-                        <textarea id="voiceActors" rows="2"></textarea>
+                        <label>声优 <span class="label-hint">格式：角色名（声优名），按回车添加</span></label>
+                        <div class="voice-input-wrapper">
+                            <input type="text" id="voiceInput" placeholder="例如：蒼（神奈延年）" onkeydown="app.handleVoiceInput(event)">
+                            <button type="button" class="btn-add-tag" onclick="app.addVoiceTagFromInput()">＋</button>
+                        </div>
+                        <div id="voiceTags" class="tags-container"></div>
+                        <input type="hidden" id="voiceActors">
                     </div>
 
                     <div class="form-group">
@@ -102,16 +107,17 @@
                         <input type="text" id="developer">
                     </div>
                     
-                    <div class="form-group">
-                        <label>发售时间</label>
-                        <input type="text" id="releaseDate" placeholder="例如: 2013年8月30日">
+                    <!-- 发售日期+平台合并 -->
+                    <div class="form-group full-width">
+                        <label>发售时间 <span class="label-hint">格式：YYYY年M月D日：平台版，按回车添加多行</span></label>
+                        <div class="release-input-wrapper">
+                            <input type="text" id="releaseInput" placeholder="例如：2011年7月28日：PSP版" onkeydown="app.handleReleaseInput(event)">
+                            <button type="button" class="btn-add-tag" onclick="app.addReleaseTagFromInput()">＋</button>
+                        </div>
+                        <div id="releaseTags" class="tags-container release-tags"></div>
+                        <input type="hidden" id="releaseDate">
                     </div>
 
-                    <div class="form-group">
-                        <label>平台</label>
-                        <input type="text" id="platform">
-                    </div>
-                    
                     <div class="form-group">
                         <label>游玩时间</label>
                         <input type="text" id="playTime">
@@ -169,28 +175,22 @@
                         </div>
                         <div class="info-item">
                             <span class="info-label">声优</span>
-                            <span class="info-value voice-actors" id="detailVoice"></span>
+                            <div class="info-value voice-actors" id="detailVoice"></div>
                         </div>
                         
                         <div class="info-divider"></div>
                         
-                        <div class="info-grid-2">
-                            <div class="info-item">
-                                <span class="info-label small">发售/开发</span>
-                                <span class="info-value" id="detailDev"></span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label small">平台</span>
-                                <span class="info-value" id="detailPlatform"></span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label small">发售时间</span>
-                                <span class="info-value" id="detailDate"></span>
-                            </div>
-                            <div class="info-item">
-                                <span class="info-label small">游玩时间</span>
-                                <span class="info-value" id="detailTime"></span>
-                            </div>
+                        <div class="info-item">
+                            <span class="info-label small">发售/开发</span>
+                            <span class="info-value" id="detailDev"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label small">发售时间</span>
+                            <div class="info-value release-dates" id="detailDate"></div>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label small">游玩时间</span>
+                            <span class="info-value" id="detailTime"></span>
                         </div>
                         
                         <div class="info-item">
@@ -213,7 +213,6 @@
         </div>
     </div>
 
-    <!-- 关键修复：使用相对路径 ./ -->
     <script src="./js/app.js"></script>
 </body>
 </html>
