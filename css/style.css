@@ -3,15 +3,16 @@
     --pink-light: #FFF0F5;
     --pink-main: #FFB6C1;
     --pink-dark: #FF69B4;
+    --pink-pale: #FFE4E9;
     --blue-light: #E6F3FF;
     --blue-main: #87CEEB;
     --purple-light: #F3E5F5;
     --purple-main: #DDA0DD;
     --white: #FFFAFA;
     --gray-100: #F8F9FA;
+    --gray-300: #DEE2E6;
     --gray-600: #6C757D;
     --gray-800: #343A40;
-    --lace-border: 2px dashed var(--pink-main);
 }
 
 * {
@@ -481,6 +482,12 @@ form {
     color: var(--gray-600);
 }
 
+.label-hint {
+    font-weight: 400;
+    color: var(--gray-600);
+    font-size: 0.75rem;
+}
+
 .form-group input,
 .form-group textarea {
     padding: 0.7rem 1rem;
@@ -501,6 +508,99 @@ form {
 
 .form-group textarea {
     resize: vertical;
+}
+
+/* ===== 标签系统 ===== */
+.voice-input-wrapper,
+.release-input-wrapper {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.voice-input-wrapper input,
+.release-input-wrapper input {
+    flex: 1;
+}
+
+.btn-add-tag {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 2px solid var(--pink-main);
+    background: var(--pink-light);
+    color: var(--pink-dark);
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+
+.btn-add-tag:hover {
+    background: var(--pink-main);
+    color: white;
+}
+
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    min-height: 0;
+}
+
+.tags-container:empty {
+    display: none;
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    background: var(--pink-pale);
+    color: var(--pink-dark);
+    border: 1px solid var(--pink-main);
+}
+
+.tag .tag-remove {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    transition: all 0.2s;
+}
+
+.tag .tag-remove:hover {
+    background: var(--pink-dark);
+    color: white;
+}
+
+/* 声优标签特殊样式 - 显示角色和声优 */
+.tag-voice {
+    background: var(--blue-light);
+    color: #2980B9;
+    border-color: var(--blue-main);
+}
+
+.tag-voice .tag-seiyuu {
+    color: #5DADE2;
+    font-size: 0.75rem;
+}
+
+/* 发售标签 */
+.release-tags .tag {
+    background: var(--purple-light);
+    color: #8E44AD;
+    border-color: var(--purple-main);
 }
 
 /* 星级输入 */
@@ -625,9 +725,46 @@ form {
     flex: 1;
 }
 
+/* 声优显示 */
 .voice-actors {
-    white-space: pre-line;
-    line-height: 1.8;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.voice-line {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.voice-char {
+    font-weight: 600;
+    color: var(--gray-800);
+}
+
+.voice-sep {
+    color: var(--gray-600);
+}
+
+.voice-seiyuu {
+    color: var(--pink-dark);
+    background: var(--pink-pale);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+/* 发售日期显示 */
+.release-dates {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.release-line {
+    padding: 0.2rem 0;
 }
 
 .info-divider {
