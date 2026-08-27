@@ -271,6 +271,19 @@ body {
     text-align: center;
 }
 
+/* 卡片评分 - 独立规则，不在 .card-info 里面 */
+.card-rating {
+    margin-top: 0.3rem;
+    font-size: 0.85rem;
+    color: #FFD700;
+}
+
+.card-rating span {
+    color: var(--gray-600);
+    margin-left: 0.3rem;
+    font-size: 0.8rem;
+}
+
 .card-title {
     font-size: 1rem;
     font-weight: 700;
@@ -599,23 +612,107 @@ form {
     border-color: var(--purple-main);
 }
 
-/* 星级输入 */
+/* ===== 星级输入 - 支持半星 ===== */
 .star-input {
     display: flex;
-    gap: 0.5rem;
-    font-size: 1.8rem;
+    gap: 0.3rem;
+    font-size: 2.2rem;
     cursor: pointer;
+    user-select: none;
 }
 
 .star-input .star {
-    color: #ddd;
-    transition: all 0.2s;
+    position: relative;
+    display: inline-block;
+    width: 1.1em;
+    height: 1.1em;
+    line-height: 1.1em;
+    text-align: center;
 }
 
-.star-input .star:hover,
-.star-input .star.active {
+/* 底层：空星 */
+.star-input .star::before {
+    content: '☆';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    color: #ddd;
+    z-index: 1;
+}
+
+/* 满星覆盖 */
+.star-input .star.full::after {
+    content: '★';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
     color: #FFD700;
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+    z-index: 2;
+}
+
+/* 半星覆盖：只显示左半边 */
+.star-input .star.half::after {
+    content: '★';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 50%;
+    overflow: hidden;
+    color: #FFD700;
+    z-index: 2;
+}
+
+/* 悬停效果 */
+.star-input .star:hover {
+    transform: scale(1.15);
+}
+
+/* ===== 详情页星级显示 ===== */
+.star-display {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 1.3rem;
+}
+
+.star-display .rating-number {
+    color: #666;
+    font-size: 0.95rem;
+    margin-right: 0.3rem;
+    font-weight: 600;
+}
+
+.star-display .star-full {
+    color: #FFD700;
+}
+
+.star-display .star-half-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+}
+
+.star-display .star-half-wrapper .star-empty {
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: #ddd;
+}
+
+.star-display .star-half-wrapper .star-half-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 50%;
+    overflow: hidden;
+    color: #FFD700;
+}
+
+.star-display .star-empty {
+    color: #ddd;
 }
 
 .form-actions {
@@ -627,7 +724,7 @@ form {
     border-top: 1px solid #eee;
 }
 
-/* ===== 详情弹窗 - 关键修复 ===== */
+/* ===== 详情弹窗 ===== */
 .detail-content {
     max-width: 800px;
     max-height: 90vh;
@@ -785,12 +882,6 @@ form {
     flex-shrink: 0;
 }
 
-.star-display {
-    color: #FFD700;
-    font-size: 1.2rem;
-    letter-spacing: 0.2rem;
-}
-
 .review-box {
     background: var(--pink-light);
     border-radius: 16px;
@@ -806,7 +897,7 @@ form {
     line-height: 1.6;
 }
 
-/* 编辑删除按钮 - 更明显 */
+/* 编辑删除按钮 */
 .detail-actions {
     display: flex;
     justify-content: flex-end;
@@ -923,6 +1014,10 @@ form {
         background: white;
         padding: 1rem 0;
         margin-top: 0.5rem;
+    }
+    
+    .star-input {
+        font-size: 1.8rem;
     }
 }
 
