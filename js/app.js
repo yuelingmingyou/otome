@@ -50,7 +50,6 @@ const app = {
             star.className = 'star';
             star.dataset.value = i;
             
-            // 点击事件：判断点击位置
             star.addEventListener('click', (e) => {
                 const rect = star.getBoundingClientRect();
                 const x = e.clientX - rect.left;
@@ -59,7 +58,6 @@ const app = {
                 this.setRating(value);
             });
             
-            // 鼠标移动预览
             star.addEventListener('mousemove', (e) => {
                 const rect = star.getBoundingClientRect();
                 const x = e.clientX - rect.left;
@@ -71,7 +69,6 @@ const app = {
             container.appendChild(star);
         }
         
-        // 鼠标离开恢复实际评分
         container.addEventListener('mouseleave', () => {
             this.renderStars(this.currentRating);
         });
@@ -99,7 +96,6 @@ const app = {
             } else if (value >= starValue - 0.5) {
                 star.classList.add('half');
             }
-            // 否则保持空星（只有::before）
         });
     },
 
@@ -281,14 +277,14 @@ const app = {
                     : `<div class="card-image-placeholder">🎮</div>`;
 
                 const rating = parseFloat(game.rating) || 0;
-                const starsHtml = this.renderMiniStars(rating);
+                const starsHtml = this.renderCardStars(rating);
 
                 card.innerHTML = `
                     ${imgHtml}
                     <div class="card-info">
                         <div class="card-title">${this.escapeHtml(game.title) || '未命名游戏'}</div>
                         <div class="card-meta">${this.escapeHtml(game.writer) || '未知剧本'}</div>
-                        ${rating > 0 ? `<div class="card-rating">${starsHtml} <span>${rating.toFixed(1)}</span></div>` : ''}
+                        ${rating > 0 ? starsHtml : ''}
                     </div>
                 `;
                 
@@ -297,18 +293,28 @@ const app = {
         }
     },
 
-    renderMiniStars(rating) {
-        let html = '';
+    // 卡片星级 - 使用CSS裁剪，兼容所有设备
+    renderCardStars(rating) {
+        let starsHtml = '<div class="card-rating">';
+        
         for (let i = 1; i <= 5; i++) {
+            let starClass = '';
             if (rating >= i) {
-                html += '★';
+                starClass = 'full';
             } else if (rating >= i - 0.5) {
-                html += '⯪';
-            } else {
-                html += '☆';
+                starClass = 'half';
             }
+            
+            starsHtml += `
+                <span class="star-wrapper ${starClass}">
+                    <span class="star-bg">★</span>
+                    <span class="star-fill">★</span>
+                </span>
+            `;
         }
-        return html;
+        
+        starsHtml += `<span class="rating-num">${rating.toFixed(1)}</span></div>`;
+        return starsHtml;
     },
 
     escapeHtml(text) {
@@ -466,42 +472,33 @@ const app = {
             dateContainer.textContent = '-';
         }
 
-        // 渲染星级 - 支持半星
+        // 渲染星级 - 使用CSS裁剪实现半星
         const ratingContainer = document.getElementById('detailRating');
         ratingContainer.innerHTML = '';
         const rating = parseFloat(game.rating) || 0;
         
-        // 数字评分
         const ratingNum = document.createElement('span');
         ratingNum.className = 'rating-number';
         ratingNum.textContent = rating > 0 ? rating.toFixed(1) : '未评分';
         ratingContainer.appendChild(ratingNum);
         
-        // 星星
         if (rating > 0) {
             for (let i = 1; i <= 5; i++) {
+                const wrapper = document.createElement('span');
+                wrapper.className = 'star-icon';
+                
                 if (rating >= i) {
-                    // 满星
-                    const star = document.createElement('span');
-                    star.className = 'star-full';
-                    star.textContent = '★';
-                    ratingContainer.appendChild(star);
+                    wrapper.classList.add('full');
                 } else if (rating >= i - 0.5) {
-                    // 半星
-                    const wrapper = document.createElement('span');
-                    wrapper.className = 'star-half-wrapper';
-                    wrapper.innerHTML = `
-                        <span class="star-empty">☆</span>
-                        <span class="star-half-fill">★</span>
-                    `;
-                    ratingContainer.appendChild(wrapper);
-                } else {
-                    // 空星
-                    const star = document.createElement('span');
-                    star.className = 'star-empty';
-                    star.textContent = '☆';
-                    ratingContainer.appendChild(star);
+                    wrapper.classList.add('half');
                 }
+                
+                wrapper.innerHTML = `
+                    <span class="star-bg">★</span>
+                    <span class="star-fill">★</span>
+                `;
+                
+                ratingContainer.appendChild(wrapper);
             }
         }
 
